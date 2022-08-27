@@ -89,7 +89,7 @@ def run_m5_term(port):
     logging.info(f'run command result: {child.before}')
     logging.info(f'send m5 quit command: {args.m5_exit_command}')
     child.sendline(args.m5_exit_command)
-    child.expect('#', timeout=TIMEOUT)
+    child.expect(pexpect.EOF, timeout=TIMEOUT)
     logging.info('gem5 exit success. outs are as follows:')
     logging.info(child.before)
     child.close()
