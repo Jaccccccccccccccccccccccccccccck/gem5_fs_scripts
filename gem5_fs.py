@@ -19,6 +19,7 @@ parser.add_argument("--disk_image", type=str, default='ubuntu-18.04-arm64-docker
 parser.add_argument("--kernel", type=str, default='vmlinux-4.14')
 parser.add_argument("--m5_term", type=str, default='m5term')
 parser.add_argument("--m5_exit_command", type=str, default='m5 exit')
+parser.add_argument("--caches", type=str, default='')
 args = parser.parse_args()
 
 # pexpect timeout 1000 days: 1000 * 24 * 60m * 60s/m
@@ -37,6 +38,7 @@ M5_PATH={args.m5_path} {args.gem5} \
     -n {args.num_cpu} \
     --bootloader={args.m5_bootloader} \
     --disk-image={args.disk_image} \
+    --caches {args.caches} \
     --kernel={args.kernel}
 '''
 M5_TERM_COMMAND = '''
@@ -58,16 +60,18 @@ def run_gem5():
     logging.info('gem5 shell open ...')
     logging.info(f'gem5 command: {GEM5_COMMAND}' )
     child = pexpect.spawn('bash', ['-c', GEM5_COMMAND], timeout=TIMEOUT)
-    child.expect('system.realview.uart1.device', timeout=TIMEOUT)
-    gem5_log = child.before.decode('UTF8')
-    logging.info(f'gem5_log: {gem5_log}')
     re_port = re.compile(r'system.terminal: Listening for connections on port (\d+)')
-    match_result = re.search(re_port, gem5_log)
-    if match_result:
-        logging.info(f'extract terminal port:{match_result.group(1)}')
-    else:
-        logging.error('extract terminal port failed!')
-    return match_result.group(1), child
+    while(True) :
+        child.expect('system.realview.uart1.device', timeout=TIMEOUT)
+        gem5_log = child.before.decode('UTF8')
+        logging.info(f'gem5_log: {gem5_log}')
+        match_result = re.search(re_port, gem5_log)
+        if match_result:
+            logging.info(f'extract terminal port:{match_result.group(1)}')
+            return match_result.group(1), child
+        else:
+            logging.error('extract terminal port failed!')
+    return N, None
 
 def run_m5_term(port):
     logging.info('m5term shell open ...')

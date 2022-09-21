@@ -10,5 +10,31 @@ pip3 install pexpect
 ### cpu_type: 模拟的CPU类型，可选：TimingSimpleCPU/O3CPU/MinorCPU  
 ## 启动示例
 ```
-python3 gem5_fs.py --m5_out=/home/testfs1 --cpu_type=TimingSimpleCPU
+nohup python3 gem5_fs.py \
+    --m5_out=/home/testO3 \ 
+    --cpu_type=O3CPU \
+    >gem5_testO3_4.out 2>&1 &
+```
+## 启用L3 caches启动示例
+```
+nohup python3 gem5_fs.py \
+    --m5_out=/home/test_o3_l3_parsec_4 \
+    --cpu_type=O3CPU \
+    --num_cpu=4 \
+    --gem5_config_py=/home/workspace/gem5/configs/example/fsL3.py \
+    --command='/streamcluster/inst/amd64-linux.gcc/bin/streamcluster 2 5 1 10 10 5 none output.txt 4' \
+    --caches='--l1d_size=64kB --l1i_size=64kB --l2_size=512kB --l2cache --l3_size=4MB --l3cache' \
+    >gem5_test_o3_l3_parserc_4.out 2>&1 &
+```
+
+## 使用ruby L3经典模型启动示例
+```
+nohup python3 gem5_fs.py \
+    --m5_out=/home/test_o3_l3_ruby_parserc_1 \
+    --cpu_type=O3CPU \
+    --num_cpu=4 \
+    --gem5_config_py=/home/workspace/gem5/configs/example/fsL3.py \
+    --command='/streamcluster/inst/amd64-linux.gcc/bin/streamcluster 2 5 1 10 10 5 none output.txt 4' \
+    --caches='--ruby --l1d_size=64kB --l1i_size=64kB --l2_size=512kB --l2cache --l3_size=4MB --l3cache --num-l3caches=1' \
+    >gem5_test_o3_ruby_l3_parsec_1.out 2>&1 &
 ```
